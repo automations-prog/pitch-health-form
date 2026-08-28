@@ -107,8 +107,14 @@ export default function PitchHealthOnboarding() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#FAF7FD]">
-      <div className="w-full max-w-2xl mx-auto py-10 px-6 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
+    <div className="relative min-h-screen w-full overflow-hidden bg-[#FAF7FD]">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="animate-blob-float absolute -left-24 top-[8%] h-72 w-72 rounded-full bg-gradient-to-br from-[#8C5FC9] to-[#E17FC4] opacity-20 blur-3xl" />
+        <div className="animate-blob-float-slow absolute -right-28 top-[35%] h-96 w-96 rounded-full bg-gradient-to-br from-[#E17FC4] to-[#8C5FC9] opacity-20 blur-3xl" />
+        <div className="animate-blob-float absolute -left-20 bottom-[6%] h-64 w-64 rounded-full bg-gradient-to-br from-[#8C5FC9] to-[#E17FC4] opacity-15 blur-3xl [animation-delay:-4s]" />
+        <div className="animate-blob-float-slow absolute right-[6%] bottom-[2%] h-56 w-56 rounded-full bg-gradient-to-br from-[#E17FC4] to-[#8C5FC9] opacity-15 blur-3xl [animation-delay:-2s]" />
+      </div>
+      <div className="relative w-full max-w-3xl mx-auto py-10 px-6 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
       <div className="h-[120px] rounded-lg border border-[#E9E1F3] bg-white flex items-center justify-center mb-9">
         <Image
           src="/logo_black_text.png"
@@ -225,7 +231,7 @@ export default function PitchHealthOnboarding() {
                     value={form.country}
                     onValueChange={(v) => update("country", v)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select country" />
                     </SelectTrigger>
                     <SelectContent>
@@ -258,7 +264,7 @@ export default function PitchHealthOnboarding() {
                   <div>
                     <FieldLabel required>State</FieldLabel>
                     <Select>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select state" />
                       </SelectTrigger>
                       <SelectContent>
@@ -274,7 +280,7 @@ export default function PitchHealthOnboarding() {
                   <div>
                     <FieldLabel required>Province</FieldLabel>
                     <Select>
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select province" />
                       </SelectTrigger>
                       <SelectContent>
@@ -374,7 +380,7 @@ export default function PitchHealthOnboarding() {
                     value={form.idAddress}
                     onValueChange={(v) => update("idAddress", v)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
                     <SelectContent>
@@ -402,7 +408,7 @@ export default function PitchHealthOnboarding() {
                     value={form.source}
                     onValueChange={(v) => update("source", v)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
                     <SelectContent>
