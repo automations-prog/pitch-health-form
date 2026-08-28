@@ -410,6 +410,7 @@ export default function PitchHealthOnboarding() {
           </linearGradient>
         </defs>
         <path
+          id="heartbeatPath"
           d="M0 17 L140 17 L160 4 L180 30 L200 17 L600 17"
           fill="none"
           stroke="url(#pulseGrad)"
@@ -419,16 +420,15 @@ export default function PitchHealthOnboarding() {
           pathLength={1}
           className="animate-draw-line"
         />
-        <path
-          d="M0 17 L140 17 L160 4 L180 30 L200 17 L600 17"
-          fill="none"
-          stroke="url(#pulseGrad)"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          pathLength={1}
-          className="animate-pulse-travel"
-        />
+        <circle r="4" fill="url(#pulseGrad)">
+          <animateMotion
+            dur="5s"
+            begin="1.2s"
+            repeatCount="indefinite"
+          >
+            <mpath href="#heartbeatPath" />
+          </animateMotion>
+        </circle>
       </svg>
 
       <div className="flex justify-between my-4 mb-9">

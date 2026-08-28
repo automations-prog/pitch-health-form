@@ -40,19 +40,6 @@
   animation: blob-float 20s ease-in-out infinite;
 }
 
-@keyframes pulse-travel {
-  from {
-    stroke-dashoffset: 0;
-  }
-  to {
-    stroke-dashoffset: -1;
-  }
-}
-
-.animate-pulse-travel {
-  stroke-dasharray: 0.12 0.88;
-  animation: pulse-travel 5s linear 1.2s infinite;
-}
 
 @theme inline {
   --color-background: var(--background);
