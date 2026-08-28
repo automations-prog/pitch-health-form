@@ -1,17 +1,5 @@
-What brought you to Pitch Perfect?
+Does your Government-issued ID have your Full Address?
 
-[
-"Pitch Health",
-"Friend / Family",
-"Indeed",
-"LinkedIn",
-"Social Media",
-"Recruiter",
-"Job Board",
-"Others",
-"Referred by a current Pitch Perfect employee"
-]
+if this is yes dont shor the document with address
 
-if Referred by a current Pitch Perfect employee display who referred you
-
-if Others display please specify how you heard about us
+else if no shhow the document with address

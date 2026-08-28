@@ -35,8 +35,10 @@ import {
 import {
   AlertTriangle,
   Check,
+  CheckCircle2,
   ChevronsUpDown,
   FileText,
+  Loader2,
   Plus,
   UploadCloud,
   X,
@@ -44,6 +46,16 @@ import {
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import {
+  CANADIAN_PROVINCES,
+  FILE_LABELS,
+  SOURCE_OPTIONS,
+  US_STATES,
+  emptyForm,
+  getStepRequirements,
+  getSummaryFields,
+  type FormState,
+} from "@/lib/onboarding-fields";
 
 const steps = [
   { label: "Your details" },
@@ -173,72 +185,6 @@ function Dropzone({
   );
 }
 
-const US_STATES = [
-  "Colorado",
-  "New York",
-  "Alabama",
-  "Alaska",
-  "Arizona",
-  "Arkansas",
-  "California",
-  "Connecticut",
-  "Delaware",
-  "Florida",
-  "Georgia",
-  "Hawaii",
-  "Idaho",
-  "Illinois",
-  "Indiana",
-  "Iowa",
-  "Kansas",
-  "Kentucky",
-  "Louisiana",
-  "Maine",
-  "Maryland",
-  "Massachusetts",
-  "Michigan",
-  "Minnesota",
-  "Mississippi",
-  "Missouri",
-  "Montana",
-  "Nebraska",
-  "Nevada",
-  "New Hampshire",
-  "New Jersey",
-  "New Mexico",
-  "North Carolina",
-  "North Dakota",
-  "Ohio",
-  "Oklahoma",
-  "Oregon",
-  "Pennsylvania",
-  "Rhode Island",
-  "South Carolina",
-  "South Dakota",
-  "Tennessee",
-  "Texas",
-  "Utah",
-  "Vermont",
-  "Virginia",
-  "Washington",
-  "West Virginia",
-  "Wisconsin",
-  "Wyoming",
-];
-
-const CANADIAN_PROVINCES = [
-  "Alberta",
-  "British Columbia",
-  "Manitoba",
-  "New Brunswick",
-  "Newfoundland and Labrador",
-  "Nova Scotia",
-  "Ontario",
-  "Prince Edward Island",
-  "Quebec",
-  "Saskatchewan",
-];
-
 function Combobox({
   value,
   onChange,
@@ -320,107 +266,6 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
-type FormState = {
-  fullName: string;
-  email: string;
-  phone: string;
-  dob: string;
-  country: string;
-  street: string;
-  city: string;
-  usState: string;
-  zip: string;
-  province: string;
-  postal: string;
-  idAddress: string;
-  source: string;
-  referrer: string;
-  sourceOther: string;
-};
-
-const emptyForm: FormState = {
-  fullName: "",
-  email: "",
-  phone: "",
-  dob: "",
-  country: "",
-  street: "",
-  city: "",
-  usState: "",
-  zip: "",
-  province: "",
-  postal: "",
-  idAddress: "",
-  source: "",
-  referrer: "",
-  sourceOther: "",
-};
-
-const SOURCE_OPTIONS = [
-  "PitchHealth",
-  "Friend / Family",
-  "Indeed",
-  "LinkedIn",
-  "Social Media",
-  "Recruiter",
-  "Job Board",
-  "Others",
-  "Referred by a current PitchHealth employee",
-];
-
-function getStepRequirements(
-  stepIndex: number,
-  country: string,
-  source: string,
-) {
-  switch (stepIndex) {
-    case 0:
-      return {
-        fields: ["fullName", "email", "phone", "dob", "country"] as const,
-        files: [] as string[],
-      };
-    case 1:
-      return {
-        fields: [
-          "street",
-          "city",
-          ...(country === "America" ? (["usState", "zip"] as const) : []),
-          ...(country === "Canada" ? (["province", "postal"] as const) : []),
-        ] as (keyof FormState)[],
-        files: [
-          "voidCheque",
-          ...(country === "America" ? ["ssn"] : []),
-          ...(country === "Canada" ? ["sin"] : []),
-        ],
-      };
-    case 2:
-      return { fields: [] as (keyof FormState)[], files: ["speedScreenshot"] };
-    case 3:
-      return {
-        fields: [
-          "idAddress",
-          "source",
-          ...(source === "Referred by a current PitchHealth employee"
-            ? (["referrer"] as const)
-            : []),
-          ...(source === "Others" ? (["sourceOther"] as const) : []),
-        ] as (keyof FormState)[],
-        files: ["govId", "addressDoc"],
-      };
-    default:
-      return { fields: [] as (keyof FormState)[], files: [] as string[] };
-  }
-}
-
-const FILE_LABELS: Record<string, string> = {
-  ssn: "Photo of Social Security card",
-  sin: "Photo of Social Insurance Number",
-  voidCheque: "Photo of void cheque or direct deposit form",
-  speedScreenshot: "Speed test screenshot",
-  govId: "Government-issued ID",
-  addressDoc: "Document with address",
-};
-
 export default function PitchHealthOnboarding() {
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState<1 | -1>(1);
@@ -428,6 +273,10 @@ export default function PitchHealthOnboarding() {
   const [files, setFiles] = useState<Record<string, File | null>>({});
   const [attemptedAdvance, setAttemptedAdvance] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<
+    "idle" | "submitting" | "success" | "error"
+  >("idle");
+  const [submitError, setSubmitError] = useState("");
 
   const update = (key: keyof FormState, value: string | null) =>
     setForm((f) => ({ ...f, [key]: value ?? "" }));
@@ -440,6 +289,7 @@ export default function PitchHealthOnboarding() {
       stepIndex,
       form.country,
       form.source,
+      form.idAddress,
     );
     const fieldsOk = fields.every((key) => form[key].trim() !== "");
     const filesOk = requiredFiles.every((key) => Boolean(files[key]));
@@ -471,48 +321,43 @@ export default function PitchHealthOnboarding() {
       setAttemptedAdvance(true);
       return;
     }
+    setSubmitStatus("idle");
+    setSubmitError("");
     setShowConfirm(true);
   };
 
-  const confirmSubmit = () => {
-    setShowConfirm(false);
-    alert(
-      "Onboarding submitted. Connect this to your backend to submit for real.",
-    );
+  const confirmSubmit = async () => {
+    setSubmitStatus("submitting");
+    setSubmitError("");
+    try {
+      const payload = new FormData();
+      for (const [key, value] of Object.entries(form)) {
+        payload.set(key, value);
+      }
+      for (const [key, file] of Object.entries(files)) {
+        if (file) payload.set(key, file);
+      }
+      const res = await fetch("/api/onboarding", {
+        method: "POST",
+        body: payload,
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        throw new Error(data?.error || "Failed to submit onboarding.");
+      }
+      setSubmitStatus("success");
+      window.setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } catch (err) {
+      setSubmitStatus("error");
+      setSubmitError(
+        err instanceof Error ? err.message : "Failed to submit onboarding.",
+      );
+    }
   };
 
-  const summaryFields: { label: string; value: string }[] = [
-    { label: "Full name", value: form.fullName },
-    { label: "Personal email", value: form.email },
-    { label: "Phone number", value: form.phone },
-    { label: "Date of birth", value: form.dob },
-    { label: "Country of residence", value: form.country },
-    { label: "Street address", value: form.street },
-    { label: "City", value: form.city },
-    ...(form.country === "America"
-      ? [
-          { label: "State", value: form.usState },
-          { label: "Zip code", value: form.zip },
-        ]
-      : []),
-    ...(form.country === "Canada"
-      ? [
-          { label: "Province", value: form.province },
-          { label: "Postal code", value: form.postal },
-        ]
-      : []),
-    {
-      label: "Does your Government-issued ID have your Full Address?",
-      value: form.idAddress,
-    },
-    { label: "What brought you to PitchHealth?", value: form.source },
-    ...(form.source === "Referred by a current PitchHealth employee"
-      ? [{ label: "Who referred you?", value: form.referrer }]
-      : []),
-    ...(form.source === "Others"
-      ? [{ label: "How did you hear about us", value: form.sourceOther }]
-      : []),
-  ];
+  const summaryFields = getSummaryFields(form);
 
   const summaryFiles = Object.entries(files).filter(
     (entry): entry is [string, File] => Boolean(entry[1]),
@@ -883,7 +728,10 @@ export default function PitchHealthOnboarding() {
                   </FieldLabel>
                   <Select
                     value={form.idAddress}
-                    onValueChange={(v) => update("idAddress", v)}
+                    onValueChange={(v) => {
+                      update("idAddress", v);
+                      if (v === "Yes") setFile("addressDoc", null);
+                    }}
                   >
                     <SelectTrigger
                       className="w-full"
@@ -898,21 +746,23 @@ export default function PitchHealthOnboarding() {
                   </Select>
                 </div>
 
-                <div>
-                  <FieldLabel required>
-                    Document with Address (E.g: Piece of mail, Utility Bill)
-                  </FieldLabel>
-                  <p className="text-xs text-[#6E677E] mb-2">
-                    Make sure it&apos;s clear, complete, and easy to read.
-                  </p>
-                  <Dropzone
-                    name="addressDoc"
-                    required
-                    file={files.addressDoc ?? null}
-                    invalid={fileInvalid("addressDoc")}
-                    onFileChange={(f) => setFile("addressDoc", f)}
-                  />
-                </div>
+                {form.idAddress === "No" && (
+                  <div>
+                    <FieldLabel required>
+                      Document with Address (E.g: Piece of mail, Utility Bill)
+                    </FieldLabel>
+                    <p className="text-xs text-[#6E677E] mb-2">
+                      Make sure it&apos;s clear, complete, and easy to read.
+                    </p>
+                    <Dropzone
+                      name="addressDoc"
+                      required
+                      file={files.addressDoc ?? null}
+                      invalid={fileInvalid("addressDoc")}
+                      onFileChange={(f) => setFile("addressDoc", f)}
+                    />
+                  </div>
+                )}
 
                 <div>
                   <FieldLabel required>
@@ -1014,58 +864,106 @@ export default function PitchHealthOnboarding() {
       </p>
       </div>
 
-      <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
+      <Dialog
+        open={showConfirm}
+        onOpenChange={(open) => {
+          if (submitStatus === "submitting") return;
+          setShowConfirm(open);
+        }}
+      >
         <DialogContent className="max-w-lg sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-xl">Confirm your details</DialogTitle>
-            <DialogDescription>
-              Please review your information before submitting.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="max-h-[70vh] overflow-y-auto -mx-1 px-1">
-            <dl className="divide-y divide-border">
-              {summaryFields.map((row) => (
-                <div
-                  key={row.label}
-                  className="flex justify-between gap-4 py-2.5 text-sm"
-                >
-                  <dt className="text-muted-foreground">{row.label}</dt>
-                  <dd className="text-right font-medium text-[#201C29]">
-                    {row.value || "—"}
-                  </dd>
+          {submitStatus === "success" ? (
+            <>
+              <DialogHeader>
+                <div className="flex flex-col items-center gap-3 py-6 text-center">
+                  <CheckCircle2 className="h-12 w-12 text-[#8C5FC9]" />
+                  <DialogTitle className="text-xl">
+                    Onboarding submitted
+                  </DialogTitle>
+                  <DialogDescription>
+                    Your information has been sent to PitchHealth. We&apos;ll
+                    be in touch soon.
+                  </DialogDescription>
                 </div>
-              ))}
-              {summaryFiles.map(([key, file]) => (
-                <div
-                  key={key}
-                  className="flex justify-between gap-4 py-2.5 text-sm"
+              </DialogHeader>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  onClick={() => window.location.reload()}
+                  className="bg-gradient-to-br from-[#8C5FC9] to-[#E17FC4] text-white font-bold hover:opacity-90"
                 >
-                  <dt className="text-muted-foreground">
-                    {FILE_LABELS[key] ?? key}
-                  </dt>
-                  <dd className="text-right font-medium text-[#201C29] truncate max-w-[60%]">
-                    {file.name}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowConfirm(false)}
-            >
-              Edit
-            </Button>
-            <Button
-              type="button"
-              onClick={confirmSubmit}
-              className="bg-gradient-to-br from-[#8C5FC9] to-[#E17FC4] text-white font-bold hover:opacity-90"
-            >
-              Confirm & submit
-            </Button>
-          </DialogFooter>
+                  Close
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-xl">
+                  Confirm your details
+                </DialogTitle>
+                <DialogDescription>
+                  Please review your information before submitting.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="max-h-[70vh] overflow-y-auto -mx-1 px-1">
+                <dl className="divide-y divide-border">
+                  {summaryFields.map((row) => (
+                    <div
+                      key={row.label}
+                      className="flex justify-between gap-4 py-2.5 text-sm"
+                    >
+                      <dt className="text-muted-foreground">{row.label}</dt>
+                      <dd className="text-right font-medium text-[#201C29]">
+                        {row.value || "—"}
+                      </dd>
+                    </div>
+                  ))}
+                  {summaryFiles.map(([key, file]) => (
+                    <div
+                      key={key}
+                      className="flex justify-between gap-4 py-2.5 text-sm"
+                    >
+                      <dt className="text-muted-foreground">
+                        {FILE_LABELS[key] ?? key}
+                      </dt>
+                      <dd className="text-right font-medium text-[#201C29] truncate max-w-[60%]">
+                        {file.name}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+              {submitStatus === "error" && (
+                <p className="text-sm text-destructive">{submitError}</p>
+              )}
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={submitStatus === "submitting"}
+                  onClick={() => setShowConfirm(false)}
+                >
+                  Edit
+                </Button>
+                <Button
+                  type="button"
+                  onClick={confirmSubmit}
+                  disabled={submitStatus === "submitting"}
+                  className="bg-gradient-to-br from-[#8C5FC9] to-[#E17FC4] text-white font-bold hover:opacity-90"
+                >
+                  {submitStatus === "submitting" && (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  )}
+                  {submitStatus === "submitting"
+                    ? "Submitting…"
+                    : submitStatus === "error"
+                      ? "Retry"
+                      : "Confirm & submit"}
+                </Button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </div>
