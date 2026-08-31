@@ -266,7 +266,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function PitchHealthOnboarding() {
+export default function  PitchHealthOnboarding() {
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState<1 | -1>(1);
   const [form, setForm] = useState<FormState>(emptyForm);
@@ -372,13 +372,13 @@ export default function PitchHealthOnboarding() {
         <div className="animate-blob-float-slow absolute right-[6%] bottom-[2%] h-56 w-56 rounded-full bg-gradient-to-br from-[#E17FC4] to-[#8C5FC9] opacity-15 blur-3xl [animation-delay:-2s]" />
       </div>
       <div className="relative w-full max-w-3xl mx-auto py-10 px-6 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
-      <div className="h-[120px] rounded-lg border border-[#E9E1F3] bg-white flex items-center justify-center mb-9">
+      <div className="h-[120px] rounded-lg border border-[#8E2ACA] bg-[#8E2ACA] flex items-center justify-center mb-9">
         <Image
-          src="/logo_black_text.png"
-          alt="PitchHealth Solutions"
-          width={280}
-          height={56}
-          className="h-14 w-auto"
+          src="/logo_purple.png"
+          alt="Pitch Perfect Solutions"
+          width={230}
+          height={66}
+          className="h-16 w-auto"
           priority
         />
       </div>
@@ -390,7 +390,7 @@ export default function PitchHealthOnboarding() {
         <h1 className="text-3xl font-extrabold text-[#201C29] leading-tight mb-3">
           Welcome to
           <br />
-          PitchHealth.
+          Pitch Perfect.
         </h1>
         <p className="text-sm text-[#6E677E] max-w-sm mx-auto leading-relaxed">
           A few details so payroll, IT, and compliance can get your line set up.
@@ -766,7 +766,7 @@ export default function PitchHealthOnboarding() {
 
                 <div>
                   <FieldLabel required>
-                    What brought you to PitchHealth?
+                    What brought you to Pitch Perfect?
                   </FieldLabel>
                   <Select
                     value={form.source}
@@ -788,7 +788,7 @@ export default function PitchHealthOnboarding() {
                   </Select>
                 </div>
 
-                {form.source === "Referred by a current PitchHealth employee" && (
+                {form.source === "Referred by a current Pitch Perfect employee" && (
                   <div>
                     <FieldLabel required>Who referred you?</FieldLabel>
                     <Input
@@ -881,7 +881,7 @@ export default function PitchHealthOnboarding() {
                     Onboarding submitted
                   </DialogTitle>
                   <DialogDescription>
-                    Your information has been sent to PitchHealth. We&apos;ll
+                    Your information has been sent to Pitch Perfect. We&apos;ll
                     be in touch soon.
                   </DialogDescription>
                 </div>
