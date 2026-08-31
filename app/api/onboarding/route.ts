@@ -62,18 +62,13 @@ export async function POST(request: Request) {
 
   // Build the Airtable payload from the real column names — these differ
   // from the on-screen labels in getSummaryFields (see AIRTABLE_FIELD_NAMES
-  // for why). `sourceOther` has no dedicated column in Airtable, so its text
-  // is appended onto the "Source" field instead of being dropped.
+  // for why).
   const airtableFields: Record<string, string> = {};
   for (const { key, value } of getSummaryFields(form)) {
     if (!value) continue;
     const columnName = AIRTABLE_FIELD_NAMES[key];
     if (!columnName) continue;
-    if (key === "source" && form.sourceOther) {
-      airtableFields[columnName] = `${value}: ${form.sourceOther}`;
-    } else {
-      airtableFields[columnName] = value;
-    }
+    airtableFields[columnName] = value;
   }
 
   const createRes = await fetch(

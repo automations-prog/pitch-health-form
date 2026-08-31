@@ -8,17 +8,17 @@ export type FormState = {
   email: string;
   phone: string;
   dob: string;
-  country: string;
-  street: string;
-  city: string;
-  usState: string;
-  zip: string;
-  province: string;
-  postal: string;
-  idAddress: string;
-  source: string;
-  referrer: string;
-  sourceOther: string;
+  mailingAddress: string;
+  residentState: string;
+  // Comma-separated list of states the applicant is licensed in, e.g.
+  // "California, Texas". Stored as a single string (like every other
+  // FormState field) so it round-trips through FormData without special
+  // casing; the UI parses/joins it when driving the multi-select.
+  licensedStates: string;
+  npn: string;
+  ssn: string;
+  medicareNew: string;
+  bankDetails: string;
 };
 
 export const emptyForm: FormState = {
@@ -26,30 +26,16 @@ export const emptyForm: FormState = {
   email: "",
   phone: "",
   dob: "",
-  country: "",
-  street: "",
-  city: "",
-  usState: "",
-  zip: "",
-  province: "",
-  postal: "",
-  idAddress: "",
-  source: "",
-  referrer: "",
-  sourceOther: "",
+  mailingAddress: "",
+  residentState: "",
+  licensedStates: "",
+  npn: "",
+  ssn: "",
+  medicareNew: "",
+  bankDetails: "",
 };
 
-export const SOURCE_OPTIONS = [
-  "Pitch health",
-  "Friend / Family",
-  "Indeed",
-  "LinkedIn",
-  "Social Media",
-  "Recruiter",
-  "Job Board",
-  "Others",
-  "Referred by a current Pitch health employee",
-];
+export const MEDICARE_OPTIONS = ["Yes", "No"];
 
 export const US_STATES = [
   "Colorado",
@@ -104,110 +90,72 @@ export const US_STATES = [
   "Wyoming",
 ];
 
-export const CANADIAN_PROVINCES = [
-  "Alberta",
-  "British Columbia",
-  "Manitoba",
-  "New Brunswick",
-  "Newfoundland and Labrador",
-  "Nova Scotia",
-  "Ontario",
-  "Prince Edward Island",
-  "Quebec",
-  "Saskatchewan",
-];
-
-// Keys match the <input name="..."> / Dropzone `name` used on the client, and
-// the FormData keys the client posts to the API route. Values are the
-// friendly labels shown in the on-screen confirmation modal — these are NOT
-// necessarily the real Airtable Attachment column names (see
-// AIRTABLE_FILE_FIELD_NAMES below for those).
+// Keys match the Dropzone `name` used on the client, and the FormData keys
+// the client posts to the API route. Values are the friendly labels shown in
+// the on-screen confirmation modal — these are NOT necessarily the real
+// Airtable Attachment column names (see AIRTABLE_FILE_FIELD_NAMES below for
+// those).
 export const FILE_LABELS: Record<string, string> = {
-  ssn: "Photo of Social Security card",
-  sin: "Photo of Social Insurance Number",
-  voidCheque: "Photo of void cheque or direct deposit form",
   speedScreenshot: "Speed test screenshot",
-  govId: "Government-issued ID",
-  addressDoc: "Document with address",
+  ssnCard: "Screenshot of your Social Security Card",
+  photoId: "Screenshot of your Photo ID",
 };
 
-// The real Airtable Attachment column names, confirmed against the live
-// table schema. Used server-side only (app/api/onboarding/route.ts) — the UI
-// keeps using the friendlier FILE_LABELS above.
+// The real Airtable Attachment column names. NOTE: the Airtable base is being
+// rebuilt to match the new form, so these are best-guess names taken
+// verbatim from the new form's field labels — confirm against the live
+// table schema once it exists and adjust if the actual column names differ.
 export const AIRTABLE_FILE_FIELD_NAMES: Record<string, string> = {
-  ssn: "Photo of your Social Security Card",
-  sin: "Photo of your Social Insurance Number",
-  voidCheque: "Photo of Void Cheque or Direct Deposit Form",
   speedScreenshot:
-    "Upload a screenshot of your internet UPLOAD speed. Go to speedtest.net",
-  govId: "Government-issued ID",
-  addressDoc: "File with Address",
+    "Upload your a screenshot of your internet speed. Go to speedtest.net",
+  ssnCard: "Screenshot of your Social Security Card",
+  photoId: "Screenshot of your Photo ID",
 };
 
-// The real Airtable text/select column names, confirmed against the live
-// table schema, keyed by FormState field. `sourceOther` has no dedicated
-// column — its value is appended into the "Source" text on the server
-// instead. Used server-side only; the UI keeps using getSummaryFields' labels
-// below for display.
+// The real Airtable text/select column names. Same caveat as
+// AIRTABLE_FILE_FIELD_NAMES above — best guess pending the new Airtable base.
+// Used server-side only; the UI keeps using getSummaryFields' labels below
+// for display.
 export const AIRTABLE_FIELD_NAMES: Partial<Record<keyof FormState, string>> = {
   fullName: "Full Name",
   email: "Personal email",
   phone: "Phone Number",
   dob: "Date of Birth",
-  country: "Country of Residence",
-  street: "Street Address",
-  city: "City",
-  usState: "State",
-  zip: "Zip Code",
-  province: "Province",
-  postal: "Postal Code",
-  idAddress: "Does your Government-issued ID have your Full Address?",
-  source: "Source",
-  referrer: "Referred By",
+  mailingAddress: "Full Mailing Address",
+  residentState: "Resident State",
+  licensedStates: "States you're licensed in",
+  npn: "NPN",
+  ssn: "SSN",
+  medicareNew: "Are you new to Medicare?",
+  bankDetails: "Bank Details (Please insert your Routing & Account Number)",
 };
 
-export function getStepRequirements(
-  stepIndex: number,
-  country: string,
-  source: string,
-  idAddress: string,
-) {
+export function getStepRequirements(stepIndex: number) {
   switch (stepIndex) {
     case 0:
       return {
-        fields: ["fullName", "email", "phone", "dob", "country"] as const,
+        fields: ["fullName", "email", "phone", "dob"] as (keyof FormState)[],
         files: [] as string[],
       };
     case 1:
       return {
         fields: [
-          "street",
-          "city",
-          ...(country === "America" ? (["usState", "zip"] as const) : []),
-          ...(country === "Canada" ? (["province", "postal"] as const) : []),
+          "mailingAddress",
+          "residentState",
+          "licensedStates",
+          "npn",
         ] as (keyof FormState)[],
-        files: [
-          "voidCheque",
-          ...(country === "America" ? ["ssn"] : []),
-          ...(country === "Canada" ? ["sin"] : []),
-        ],
+        files: [] as string[],
       };
     case 2:
-      return { fields: [] as (keyof FormState)[], files: ["speedScreenshot"] };
+      return {
+        fields: ["ssn", "medicareNew", "bankDetails"] as (keyof FormState)[],
+        files: [] as string[],
+      };
     case 3:
       return {
-        fields: [
-          "idAddress",
-          "source",
-          ...(source === "Referred by a current Pitch health employee"
-            ? (["referrer"] as const)
-            : []),
-          ...(source === "Others" ? (["sourceOther"] as const) : []),
-        ] as (keyof FormState)[],
-        files: [
-          "govId",
-          ...(idAddress === "No" ? ["addressDoc"] : []),
-        ],
+        fields: [] as (keyof FormState)[],
+        files: ["speedScreenshot", "ssnCard", "photoId"],
       };
     default:
       return { fields: [] as (keyof FormState)[], files: [] as string[] };
@@ -220,8 +168,7 @@ export type SummaryField = {
   value: string;
 };
 
-// Human-readable label + value pairs for every field currently relevant to
-// `form` (respecting country/source-conditional fields), for display in the
+// Human-readable label + value pairs for every field, for display in the
 // confirmation modal. `key` identifies which FormState field this came from,
 // so the server can map it to the real Airtable column via
 // AIRTABLE_FIELD_NAMES independently of the display label.
@@ -231,52 +178,36 @@ export function getSummaryFields(form: FormState): SummaryField[] {
     { key: "email", label: "Personal email", value: form.email },
     { key: "phone", label: "Phone number", value: form.phone },
     { key: "dob", label: "Date of birth", value: form.dob },
-    { key: "country", label: "Country of residence", value: form.country },
-    { key: "street", label: "Street address", value: form.street },
-    { key: "city", label: "City", value: form.city },
-    ...(form.country === "America"
-      ? [
-          { key: "usState" as const, label: "State", value: form.usState },
-          { key: "zip" as const, label: "Zip code", value: form.zip },
-        ]
-      : []),
-    ...(form.country === "Canada"
-      ? [
-          {
-            key: "province" as const,
-            label: "Province",
-            value: form.province,
-          },
-          { key: "postal" as const, label: "Postal code", value: form.postal },
-        ]
-      : []),
     {
-      key: "idAddress",
-      label: "Does your Government-issued ID have your Full Address?",
-      value: form.idAddress,
+      key: "mailingAddress",
+      label: "Full mailing address",
+      value: form.mailingAddress,
     },
     {
-      key: "source",
-      label: "What brought you to Pitch health?",
-      value: form.source,
+      key: "residentState",
+      label: "Resident state",
+      value: form.residentState,
     },
-    ...(form.source === "Referred by a current Pitch health employee"
-      ? [
-          {
-            key: "referrer" as const,
-            label: "Who referred you?",
-            value: form.referrer,
-          },
-        ]
-      : []),
-    ...(form.source === "Others"
-      ? [
-          {
-            key: "sourceOther" as const,
-            label: "How did you hear about us",
-            value: form.sourceOther,
-          },
-        ]
-      : []),
+    {
+      key: "licensedStates",
+      label: "States you're licensed in",
+      value: form.licensedStates,
+    },
+    {
+      key: "npn",
+      label: "NPN",
+      value: form.npn,
+    },
+    { key: "ssn", label: "SSN", value: form.ssn },
+    {
+      key: "medicareNew",
+      label: "Are you new to Medicare?",
+      value: form.medicareNew,
+    },
+    {
+      key: "bankDetails",
+      label: "Bank details (routing & account number)",
+      value: form.bankDetails,
+    },
   ];
 }

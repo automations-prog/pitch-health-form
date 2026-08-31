@@ -46,10 +46,10 @@ import {
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
 import {
-  CANADIAN_PROVINCES,
   FILE_LABELS,
-  SOURCE_OPTIONS,
+  MEDICARE_OPTIONS,
   US_STATES,
   emptyForm,
   getStepRequirements,
@@ -59,9 +59,9 @@ import {
 
 const steps = [
   { label: "Your details" },
-  { label: "Address & payout" },
-  { label: "Setup check" },
-  { label: "Verification" },
+  { label: "Licensing & address" },
+  { label: "Payout & Medicare" },
+  { label: "Uploads" },
 ];
 
 function FieldLabel({
@@ -255,6 +255,94 @@ function Combobox({
   );
 }
 
+function MultiCombobox({
+  value,
+  onChange,
+  options,
+  searchPlaceholder = "Search...",
+  invalid,
+}: {
+  value: string[];
+  onChange: (value: string[]) => void;
+  options: string[];
+  searchPlaceholder?: string;
+  invalid?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+
+  const toggle = (option: string) => {
+    onChange(
+      value.includes(option)
+        ? value.filter((v) => v !== option)
+        : [...value, option],
+    );
+  };
+
+  return (
+    <div
+      className={cn(
+        "min-h-10 w-full rounded-lg border bg-transparent px-2 py-1.5 flex flex-wrap items-center gap-1.5",
+        invalid ? "border-destructive" : "border-input",
+      )}
+    >
+      {value.map((v) => (
+        <span
+          key={v}
+          className="inline-flex items-center gap-1 rounded-full bg-[#F1ECFB] text-[#5B5FE0] text-xs font-medium pl-2.5 pr-1.5 py-1"
+        >
+          {v}
+          <button
+            type="button"
+            onClick={() => toggle(v)}
+            className="rounded-full hover:bg-[#DCD1F0] p-0.5"
+            aria-label={`Remove ${v}`}
+          >
+            <X className="w-3 h-3" />
+          </button>
+        </span>
+      ))}
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger
+          render={
+            <button
+              type="button"
+              className="inline-flex items-center justify-center w-7 h-7 rounded-md border border-dashed border-[#D9C7EE] text-[#5B5FE0] hover:bg-[#F0E5FA] shrink-0"
+              aria-label="Add state"
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </button>
+          }
+        />
+        <PopoverContent className="w-64 p-0">
+          <Command>
+            <CommandInput placeholder={searchPlaceholder} />
+            <CommandList>
+              <CommandEmpty>No results found.</CommandEmpty>
+              <CommandGroup>
+                {options.map((option) => (
+                  <CommandItem
+                    key={option}
+                    value={option}
+                    onSelect={() => toggle(option)}
+                  >
+                    <Check
+                      className={cn(
+                        "h-4 w-4",
+                        value.includes(option) ? "opacity-100" : "opacity-0",
+                      )}
+                    />
+                    {option}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
+
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <h2 className="flex items-center gap-2.5 text-lg font-extrabold text-[#201C29] mb-6">
@@ -285,12 +373,7 @@ export default function  PitchHealthOnboarding() {
     setFiles((f) => ({ ...f, [name]: file }));
 
   const isStepValid = (stepIndex: number) => {
-    const { fields, files: requiredFiles } = getStepRequirements(
-      stepIndex,
-      form.country,
-      form.source,
-      form.idAddress,
-    );
+    const { fields, files: requiredFiles } = getStepRequirements(stepIndex);
     const fieldsOk = fields.every((key) => form[key].trim() !== "");
     const filesOk = requiredFiles.every((key) => Boolean(files[key]));
     return fieldsOk && filesOk;
@@ -519,24 +602,6 @@ export default function  PitchHealthOnboarding() {
                     aria-invalid={fieldInvalid("dob")}
                   />
                 </div>
-                <div>
-                  <FieldLabel required>Country of residence</FieldLabel>
-                  <Select
-                    value={form.country}
-                    onValueChange={(v) => update("country", v)}
-                  >
-                    <SelectTrigger
-                      className="w-full"
-                      aria-invalid={fieldInvalid("country")}
-                    >
-                      <SelectValue placeholder="Select country" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="America">America</SelectItem>
-                      <SelectItem value="Canada">Canada</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
               </div>
             </CardContent>
           </Card>
@@ -545,126 +610,59 @@ export default function  PitchHealthOnboarding() {
         {step === 1 && (
           <Card className="rounded-2xl border-[#E9E1F3]">
             <CardContent className="p-8">
-              <SectionTitle>Address & payout</SectionTitle>
+              <SectionTitle>Licensing & address</SectionTitle>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="sm:col-span-2">
-                  <FieldLabel required>Street address</FieldLabel>
-                  <Input
-                    name="street"
+                  <FieldLabel required>Full mailing address</FieldLabel>
+                  <Textarea
+                    name="mailingAddress"
                     required
-                    value={form.street}
-                    onChange={(e) => update("street", e.target.value)}
-                    aria-invalid={fieldInvalid("street")}
-                  />
-                </div>
-                <div
-                  className={
-                    form.country === "America" || form.country === "Canada"
-                      ? undefined
-                      : "sm:col-span-2"
-                  }
-                >
-                  <FieldLabel required>City</FieldLabel>
-                  <Input
-                    name="city"
-                    required
-                    value={form.city}
-                    onChange={(e) => update("city", e.target.value)}
-                    aria-invalid={fieldInvalid("city")}
+                    value={form.mailingAddress}
+                    onChange={(e) => update("mailingAddress", e.target.value)}
+                    aria-invalid={fieldInvalid("mailingAddress")}
                   />
                 </div>
 
-                {form.country === "America" && (
-                  <div>
-                    <FieldLabel required>State</FieldLabel>
-                    <Combobox
-                      value={form.usState}
-                      onChange={(v) => update("usState", v)}
-                      options={US_STATES}
-                      placeholder="Select state"
-                      searchPlaceholder="Search state..."
-                      invalid={fieldInvalid("usState")}
-                    />
-                  </div>
-                )}
-                {form.country === "Canada" && (
-                  <div>
-                    <FieldLabel required>Province</FieldLabel>
-                    <Combobox
-                      value={form.province}
-                      onChange={(v) => update("province", v)}
-                      options={CANADIAN_PROVINCES}
-                      placeholder="Select province"
-                      searchPlaceholder="Search province..."
-                      invalid={fieldInvalid("province")}
-                    />
-                  </div>
-                )}
+                <div>
+                  <FieldLabel required>Resident state</FieldLabel>
+                  <Combobox
+                    value={form.residentState}
+                    onChange={(v) => update("residentState", v)}
+                    options={US_STATES}
+                    placeholder="Select state"
+                    searchPlaceholder="Search state..."
+                    invalid={fieldInvalid("residentState")}
+                  />
+                </div>
 
-                {form.country === "America" && (
-                  <div>
-                    <FieldLabel required>Zip code</FieldLabel>
-                    <Input
-                      name="zip"
-                      required
-                      value={form.zip}
-                      onChange={(e) => update("zip", e.target.value)}
-                      aria-invalid={fieldInvalid("zip")}
-                    />
-                  </div>
-                )}
-                {form.country === "Canada" && (
-                  <div>
-                    <FieldLabel required>Postal code</FieldLabel>
-                    <Input
-                      name="postal"
-                      required
-                      value={form.postal}
-                      onChange={(e) => update("postal", e.target.value)}
-                      aria-invalid={fieldInvalid("postal")}
-                    />
-                  </div>
-                )}
-
-                {form.country === "America" && (
-                  <div className="sm:col-span-2">
-                    <FieldLabel required>
-                      Photo of your Social Security card
-                    </FieldLabel>
-                    <Dropzone
-                      name="ssn"
-                      required
-                      file={files.ssn ?? null}
-                      invalid={fileInvalid("ssn")}
-                      onFileChange={(f) => setFile("ssn", f)}
-                    />
-                  </div>
-                )}
-                {form.country === "Canada" && (
-                  <div className="sm:col-span-2">
-                    <FieldLabel required>
-                      Photo of your Social Insurance Number
-                    </FieldLabel>
-                    <Dropzone
-                      name="sin"
-                      required
-                      file={files.sin ?? null}
-                      invalid={fileInvalid("sin")}
-                      onFileChange={(f) => setFile("sin", f)}
-                    />
-                  </div>
-                )}
+                <div>
+                  <FieldLabel required>States you&apos;re licensed in</FieldLabel>
+                  <MultiCombobox
+                    value={
+                      form.licensedStates
+                        ? form.licensedStates.split(", ").filter(Boolean)
+                        : []
+                    }
+                    onChange={(states) =>
+                      update("licensedStates", states.join(", "))
+                    }
+                    options={US_STATES}
+                    searchPlaceholder="Search state..."
+                    invalid={fieldInvalid("licensedStates")}
+                  />
+                </div>
 
                 <div className="sm:col-span-2">
-                  <FieldLabel required>
-                    Photo of void cheque or direct deposit form
-                  </FieldLabel>
-                  <Dropzone
-                    name="voidCheque"
+                  <FieldLabel required>NPN</FieldLabel>
+                  <p className="text-xs text-[#6E677E] mb-2">
+                    If you don&apos;t have an NPN, please insert 0.
+                  </p>
+                  <Input
+                    name="npn"
                     required
-                    file={files.voidCheque ?? null}
-                    invalid={fileInvalid("voidCheque")}
-                    onFileChange={(f) => setFile("voidCheque", f)}
+                    value={form.npn}
+                    onChange={(e) => update("npn", e.target.value)}
+                    aria-invalid={fieldInvalid("npn")}
                   />
                 </div>
               </div>
@@ -675,111 +673,33 @@ export default function  PitchHealthOnboarding() {
         {step === 2 && (
           <Card className="rounded-2xl border-[#E9E1F3]">
             <CardContent className="p-8">
-              <SectionTitle>Setup check</SectionTitle>
-              <FieldLabel required>Upload speed screenshot</FieldLabel>
-              <p className="text-xs text-[#6E677E] mb-2">
-                Run a test at{" "}
-                <a
-                  href="https://speedtest.net"
-                  className="text-[#5B5FE0] font-medium"
-                >
-                  speedtest.net
-                </a>{" "}
-                and upload the result.
-              </p>
-              <Dropzone
-                name="speedScreenshot"
-                required
-                file={files.speedScreenshot ?? null}
-                invalid={fileInvalid("speedScreenshot")}
-                onFileChange={(f) => setFile("speedScreenshot", f)}
-              />
-            </CardContent>
-          </Card>
-        )}
-
-        {step === 3 && (
-          <Card className="rounded-2xl border-[#E9E1F3]">
-            <CardContent className="p-8">
-              <SectionTitle>Verification</SectionTitle>
-              <div className="flex flex-col gap-5">
+              <SectionTitle>Payout & Medicare</SectionTitle>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
-                  <FieldLabel required>Government-issued ID</FieldLabel>
-                  <Dropzone
-                    name="govId"
+                  <FieldLabel required>SSN</FieldLabel>
+                  <Input
+                    name="ssn"
                     required
-                    file={files.govId ?? null}
-                    invalid={fileInvalid("govId")}
-                    onFileChange={(f) => setFile("govId", f)}
+                    value={form.ssn}
+                    onChange={(e) => update("ssn", e.target.value)}
+                    aria-invalid={fieldInvalid("ssn")}
                   />
-                  <div className="flex items-start gap-2.5 bg-[#F1ECFB] border border-[#DCD1F0] rounded-lg px-3.5 py-3 mt-2">
-                    <AlertTriangle className="w-3.5 h-3.5 text-[#A98AD2] shrink-0 mt-0.5" />
-                    <p className="text-xs text-[#6E677E]">
-                      Make sure attachments are clear and complete. Unreadable
-                      documents may need to be resubmitted, which can delay
-                      processing.
-                    </p>
-                  </div>
                 </div>
 
                 <div>
-                  <FieldLabel required>
-                    Does your Government-issued ID have your Full Address?
-                  </FieldLabel>
+                  <FieldLabel required>Are you new to Medicare?</FieldLabel>
                   <Select
-                    value={form.idAddress}
-                    onValueChange={(v) => {
-                      update("idAddress", v);
-                      if (v === "Yes") setFile("addressDoc", null);
-                    }}
+                    value={form.medicareNew}
+                    onValueChange={(v) => update("medicareNew", v)}
                   >
                     <SelectTrigger
                       className="w-full"
-                      aria-invalid={fieldInvalid("idAddress")}
+                      aria-invalid={fieldInvalid("medicareNew")}
                     >
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Yes">Yes</SelectItem>
-                      <SelectItem value="No">No</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {form.idAddress === "No" && (
-                  <div>
-                    <FieldLabel required>
-                      Document with Address (E.g: Piece of mail, Utility Bill)
-                    </FieldLabel>
-                    <p className="text-xs text-[#6E677E] mb-2">
-                      Make sure it&apos;s clear, complete, and easy to read.
-                    </p>
-                    <Dropzone
-                      name="addressDoc"
-                      required
-                      file={files.addressDoc ?? null}
-                      invalid={fileInvalid("addressDoc")}
-                      onFileChange={(f) => setFile("addressDoc", f)}
-                    />
-                  </div>
-                )}
-
-                <div>
-                  <FieldLabel required>
-                    What brought you to Pitch health?
-                  </FieldLabel>
-                  <Select
-                    value={form.source}
-                    onValueChange={(v) => update("source", v)}
-                  >
-                    <SelectTrigger
-                      className="w-full"
-                      aria-invalid={fieldInvalid("source")}
-                    >
-                      <SelectValue placeholder="Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SOURCE_OPTIONS.map((option) => (
+                      {MEDICARE_OPTIONS.map((option) => (
                         <SelectItem key={option} value={option}>
                           {option}
                         </SelectItem>
@@ -788,33 +708,82 @@ export default function  PitchHealthOnboarding() {
                   </Select>
                 </div>
 
-                {form.source === "Referred by a current Pitch health employee" && (
-                  <div>
-                    <FieldLabel required>Who referred you?</FieldLabel>
-                    <Input
-                      name="referrer"
-                      required
-                      value={form.referrer}
-                      onChange={(e) => update("referrer", e.target.value)}
-                      aria-invalid={fieldInvalid("referrer")}
-                    />
-                  </div>
-                )}
+                <div className="sm:col-span-2">
+                  <FieldLabel required>
+                    Bank details (please insert your routing & account
+                    number)
+                  </FieldLabel>
+                  <Textarea
+                    name="bankDetails"
+                    required
+                    value={form.bankDetails}
+                    onChange={(e) => update("bankDetails", e.target.value)}
+                    aria-invalid={fieldInvalid("bankDetails")}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-                {form.source === "Others" && (
-                  <div>
-                    <FieldLabel required>
-                      Please specify how you heard about us
-                    </FieldLabel>
-                    <Input
-                      name="sourceOther"
-                      required
-                      value={form.sourceOther}
-                      onChange={(e) => update("sourceOther", e.target.value)}
-                      aria-invalid={fieldInvalid("sourceOther")}
-                    />
-                  </div>
-                )}
+        {step === 3 && (
+          <Card className="rounded-2xl border-[#E9E1F3]">
+            <CardContent className="p-8">
+              <SectionTitle>Uploads</SectionTitle>
+              <div className="flex flex-col gap-5">
+                <div>
+                  <FieldLabel required>Speed test screenshot</FieldLabel>
+                  <p className="text-xs text-[#6E677E] mb-2">
+                    Run a test at{" "}
+                    <a
+                      href="https://speedtest.net"
+                      className="text-[#5B5FE0] font-medium"
+                    >
+                      speedtest.net
+                    </a>{" "}
+                    and upload the result.
+                  </p>
+                  <Dropzone
+                    name="speedScreenshot"
+                    required
+                    file={files.speedScreenshot ?? null}
+                    invalid={fileInvalid("speedScreenshot")}
+                    onFileChange={(f) => setFile("speedScreenshot", f)}
+                  />
+                </div>
+
+                <div>
+                  <FieldLabel required>
+                    Screenshot of your Social Security Card
+                  </FieldLabel>
+                  <Dropzone
+                    name="ssnCard"
+                    required
+                    file={files.ssnCard ?? null}
+                    invalid={fileInvalid("ssnCard")}
+                    onFileChange={(f) => setFile("ssnCard", f)}
+                  />
+                </div>
+
+                <div>
+                  <FieldLabel required>Screenshot of your Photo ID</FieldLabel>
+                  <Dropzone
+                    name="photoId"
+                    required
+                    file={files.photoId ?? null}
+                    invalid={fileInvalid("photoId")}
+                    onFileChange={(f) => setFile("photoId", f)}
+                  />
+                </div>
+
+                <div className="flex items-start gap-2.5 bg-[#F1ECFB] border border-[#DCD1F0] rounded-lg px-3.5 py-3">
+                  <AlertTriangle className="w-3.5 h-3.5 text-[#A98AD2] shrink-0 mt-0.5" />
+                  <p className="text-xs text-[#6E677E]">
+                    Make sure attachments are clear and complete. Unreadable
+                    documents may need to be resubmitted, which can delay
+                    processing.
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
