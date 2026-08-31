@@ -40,7 +40,7 @@ export const emptyForm: FormState = {
 };
 
 export const SOURCE_OPTIONS = [
-  "Pitch Perfect",
+  "Pitch health",
   "Friend / Family",
   "Indeed",
   "LinkedIn",
@@ -48,7 +48,7 @@ export const SOURCE_OPTIONS = [
   "Recruiter",
   "Job Board",
   "Others",
-  "Referred by a current Pitch Perfect employee",
+  "Referred by a current Pitch health employee",
 ];
 
 export const US_STATES = [
@@ -199,7 +199,7 @@ export function getStepRequirements(
         fields: [
           "idAddress",
           "source",
-          ...(source === "Referred by a current Pitch Perfect employee"
+          ...(source === "Referred by a current Pitch health employee"
             ? (["referrer"] as const)
             : []),
           ...(source === "Others" ? (["sourceOther"] as const) : []),
@@ -257,10 +257,10 @@ export function getSummaryFields(form: FormState): SummaryField[] {
     },
     {
       key: "source",
-      label: "What brought you to Pitch Perfect?",
+      label: "What brought you to Pitch health?",
       value: form.source,
     },
-    ...(form.source === "Referred by a current Pitch Perfect employee"
+    ...(form.source === "Referred by a current Pitch health employee"
       ? [
           {
             key: "referrer" as const,

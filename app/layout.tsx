@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pitch Perfect Onboarding Form",
-  description: "Created by Pitch Perfect",
+  title: "Pitch health Onboarding Form",
+  description: "Created by Pitch health",
 };
 
 export default function RootLayout({

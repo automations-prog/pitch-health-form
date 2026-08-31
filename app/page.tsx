@@ -126,7 +126,7 @@ function Dropzone({
         className={
           "border-[1.5px] border-dashed rounded-xl px-4 py-6 text-center cursor-pointer transition-colors " +
           (isDragging
-            ? "border-[#8C5FC9] bg-[#F0E5FA]"
+            ? "border-[#5B5FE0] bg-[#F0E5FA]"
             : invalid
               ? "border-destructive bg-destructive/5"
               : "border-[#D9C7EE] bg-[#F5EEFB] hover:bg-[#F0E5FA]")
@@ -143,7 +143,7 @@ function Dropzone({
         />
         {file ? (
           <div className="flex items-center justify-center gap-3">
-            <FileText className="w-5 h-5 shrink-0 text-[#8C5FC9]" />
+            <FileText className="w-5 h-5 shrink-0 text-[#5B5FE0]" />
             <div className="min-w-0 text-left">
               <p className="truncate text-sm font-medium text-[#26212F]">
                 {file.name}
@@ -167,9 +167,9 @@ function Dropzone({
           </div>
         ) : (
           <>
-            <UploadCloud className="w-5 h-5 mx-auto mb-2 text-[#8C5FC9]" />
+            <UploadCloud className="w-5 h-5 mx-auto mb-2 text-[#5B5FE0]" />
             <p className="text-sm text-[#6E677E]">
-              <span className="text-[#8C5FC9] font-semibold">
+              <span className="text-[#5B5FE0] font-semibold">
                 Choose file
               </span>{" "}
               or drop it here
@@ -258,7 +258,7 @@ function Combobox({
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <h2 className="flex items-center gap-2.5 text-lg font-extrabold text-[#201C29] mb-6">
-      <span className="w-5 h-5 rounded-md flex items-center justify-center bg-gradient-to-br from-[#8C5FC9] to-[#E17FC4] shrink-0">
+      <span className="w-5 h-5 rounded-md flex items-center justify-center bg-gradient-to-br from-[#5B5FE0] to-[#A98AD2] shrink-0">
         <Plus className="w-3 h-3 text-white" strokeWidth={3} />
       </span>
       {children}
@@ -366,17 +366,17 @@ export default function  PitchHealthOnboarding() {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-[#FAF7FD]">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="animate-blob-float absolute -left-24 top-[8%] h-72 w-72 rounded-full bg-gradient-to-br from-[#8C5FC9] to-[#E17FC4] opacity-20 blur-3xl" />
-        <div className="animate-blob-float-slow absolute -right-28 top-[35%] h-96 w-96 rounded-full bg-gradient-to-br from-[#E17FC4] to-[#8C5FC9] opacity-20 blur-3xl" />
-        <div className="animate-blob-float absolute -left-20 bottom-[6%] h-64 w-64 rounded-full bg-gradient-to-br from-[#8C5FC9] to-[#E17FC4] opacity-15 blur-3xl [animation-delay:-4s]" />
-        <div className="animate-blob-float-slow absolute right-[6%] bottom-[2%] h-56 w-56 rounded-full bg-gradient-to-br from-[#E17FC4] to-[#8C5FC9] opacity-15 blur-3xl [animation-delay:-2s]" />
+        <div className="animate-blob-float absolute -left-24 top-[8%] h-72 w-72 rounded-full bg-gradient-to-br from-[#5B5FE0] to-[#A98AD2] opacity-20 blur-3xl" />
+        <div className="animate-blob-float-slow absolute -right-28 top-[35%] h-96 w-96 rounded-full bg-gradient-to-br from-[#A98AD2] to-[#5B5FE0] opacity-20 blur-3xl" />
+        <div className="animate-blob-float absolute -left-20 bottom-[6%] h-64 w-64 rounded-full bg-gradient-to-br from-[#5B5FE0] to-[#A98AD2] opacity-15 blur-3xl [animation-delay:-4s]" />
+        <div className="animate-blob-float-slow absolute right-[6%] bottom-[2%] h-56 w-56 rounded-full bg-gradient-to-br from-[#A98AD2] to-[#5B5FE0] opacity-15 blur-3xl [animation-delay:-2s]" />
       </div>
       <div className="relative w-full max-w-3xl mx-auto py-10 px-6 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
-      <div className="h-[120px] rounded-lg border border-[#8E2ACA] bg-[#8E2ACA] flex items-center justify-center mb-9">
+      <div className="h-[120px] rounded-lg border border-[#5B5FE0]/20 bg-white flex items-center justify-center mb-9">
         <Image
-          src="/logo_purple.png"
-          alt="Pitch Perfect Solutions"
-          width={230}
+          src="/logo_pitch_health.png"
+          alt="Pitch Health Solutions"
+          width={297}
           height={66}
           className="h-16 w-auto"
           priority
@@ -384,13 +384,13 @@ export default function  PitchHealthOnboarding() {
       </div>
 
       <div className="text-center mb-9">
-        <p className="text-xs font-semibold tracking-widest uppercase text-[#E17FC4] mb-2">
+        <p className="text-xs font-semibold tracking-widest uppercase text-[#A98AD2] mb-2">
           Agent onboarding
         </p>
         <h1 className="text-3xl font-extrabold text-[#201C29] leading-tight mb-3">
           Welcome to
           <br />
-          Pitch Perfect.
+          Pitch health.
         </h1>
         <p className="text-sm text-[#6E677E] max-w-sm mx-auto leading-relaxed">
           A few details so payroll, IT, and compliance can get your line set up.
@@ -405,8 +405,8 @@ export default function  PitchHealthOnboarding() {
       >
         <defs>
           <linearGradient id="pulseGrad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#8C5FC9" />
-            <stop offset="100%" stopColor="#E17FC4" />
+            <stop offset="0%" stopColor="#5B5FE0" />
+            <stop offset="100%" stopColor="#A98AD2" />
           </linearGradient>
         </defs>
         <path
@@ -441,9 +441,9 @@ export default function  PitchHealthOnboarding() {
               className={
                 "w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-extrabold border-[1.5px] transition-all duration-300 ease-out " +
                 (i < step
-                  ? "bg-[#8C5FC9] text-white border-transparent scale-100"
+                  ? "bg-[#5B5FE0] text-white border-transparent scale-100"
                   : i === step
-                    ? "bg-gradient-to-br from-[#8C5FC9] to-[#E17FC4] text-white border-transparent scale-110 shadow-md shadow-[#8C5FC9]/30"
+                    ? "bg-gradient-to-br from-[#5B5FE0] to-[#A98AD2] text-white border-transparent scale-110 shadow-md shadow-[#5B5FE0]/30"
                     : "bg-[#F5EEFB] text-[#6E677E] border-[#E9E1F3] scale-100")
               }
             >
@@ -681,7 +681,7 @@ export default function  PitchHealthOnboarding() {
                 Run a test at{" "}
                 <a
                   href="https://speedtest.net"
-                  className="text-[#8C5FC9] font-medium"
+                  className="text-[#5B5FE0] font-medium"
                 >
                   speedtest.net
                 </a>{" "}
@@ -712,8 +712,8 @@ export default function  PitchHealthOnboarding() {
                     invalid={fileInvalid("govId")}
                     onFileChange={(f) => setFile("govId", f)}
                   />
-                  <div className="flex items-start gap-2.5 bg-[#FCEEF6] border border-[#F2D3E8] rounded-lg px-3.5 py-3 mt-2">
-                    <AlertTriangle className="w-3.5 h-3.5 text-[#E17FC4] shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-2.5 bg-[#F1ECFB] border border-[#DCD1F0] rounded-lg px-3.5 py-3 mt-2">
+                    <AlertTriangle className="w-3.5 h-3.5 text-[#A98AD2] shrink-0 mt-0.5" />
                     <p className="text-xs text-[#6E677E]">
                       Make sure attachments are clear and complete. Unreadable
                       documents may need to be resubmitted, which can delay
@@ -766,7 +766,7 @@ export default function  PitchHealthOnboarding() {
 
                 <div>
                   <FieldLabel required>
-                    What brought you to Pitch Perfect?
+                    What brought you to Pitch health?
                   </FieldLabel>
                   <Select
                     value={form.source}
@@ -788,7 +788,7 @@ export default function  PitchHealthOnboarding() {
                   </Select>
                 </div>
 
-                {form.source === "Referred by a current Pitch Perfect employee" && (
+                {form.source === "Referred by a current Pitch health employee" && (
                   <div>
                     <FieldLabel required>Who referred you?</FieldLabel>
                     <Input
@@ -841,14 +841,14 @@ export default function  PitchHealthOnboarding() {
             <Button
               type="button"
               onClick={goNext}
-              className="bg-gradient-to-br from-[#8C5FC9] to-[#E17FC4] text-white font-bold rounded-lg px-7 hover:opacity-90"
+              className="bg-gradient-to-br from-[#5B5FE0] to-[#A98AD2] text-white font-bold rounded-lg px-7 hover:opacity-90"
             >
               Next
             </Button>
           ) : (
             <Button
               type="submit"
-              className="bg-gradient-to-br from-[#8C5FC9] to-[#E17FC4] text-white font-bold rounded-lg px-7 hover:opacity-90"
+              className="bg-gradient-to-br from-[#5B5FE0] to-[#A98AD2] text-white font-bold rounded-lg px-7 hover:opacity-90"
             >
               Submit
             </Button>
@@ -858,7 +858,7 @@ export default function  PitchHealthOnboarding() {
 
       <p className="text-center text-xs text-[#6E677E] mt-6">
         Do not submit passwords through this form.{" "}
-        <a href="#" className="text-[#8C5FC9]">
+        <a href="#" className="text-[#5B5FE0]">
           Report a problem
         </a>
       </p>
@@ -876,12 +876,12 @@ export default function  PitchHealthOnboarding() {
             <>
               <DialogHeader>
                 <div className="flex flex-col items-center gap-3 py-6 text-center">
-                  <CheckCircle2 className="h-12 w-12 text-[#8C5FC9]" />
+                  <CheckCircle2 className="h-12 w-12 text-[#5B5FE0]" />
                   <DialogTitle className="text-xl">
                     Onboarding submitted
                   </DialogTitle>
                   <DialogDescription>
-                    Your information has been sent to Pitch Perfect. We&apos;ll
+                    Your information has been sent to Pitch health. We&apos;ll
                     be in touch soon.
                   </DialogDescription>
                 </div>
@@ -890,7 +890,7 @@ export default function  PitchHealthOnboarding() {
                 <Button
                   type="button"
                   onClick={() => window.location.reload()}
-                  className="bg-gradient-to-br from-[#8C5FC9] to-[#E17FC4] text-white font-bold hover:opacity-90"
+                  className="bg-gradient-to-br from-[#5B5FE0] to-[#A98AD2] text-white font-bold hover:opacity-90"
                 >
                   Close
                 </Button>
@@ -950,7 +950,7 @@ export default function  PitchHealthOnboarding() {
                   type="button"
                   onClick={confirmSubmit}
                   disabled={submitStatus === "submitting"}
-                  className="bg-gradient-to-br from-[#8C5FC9] to-[#E17FC4] text-white font-bold hover:opacity-90"
+                  className="bg-gradient-to-br from-[#5B5FE0] to-[#A98AD2] text-white font-bold hover:opacity-90"
                 >
                   {submitStatus === "submitting" && (
                     <Loader2 className="h-4 w-4 animate-spin" />
