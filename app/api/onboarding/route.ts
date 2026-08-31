@@ -1,6 +1,7 @@
 import {
   AIRTABLE_FIELD_NAMES,
   AIRTABLE_FILE_FIELD_NAMES,
+  AIRTABLE_MULTISELECT_FIELDS,
   emptyForm,
   getSummaryFields,
   type FormState,
@@ -63,12 +64,14 @@ export async function POST(request: Request) {
   // Build the Airtable payload from the real column names — these differ
   // from the on-screen labels in getSummaryFields (see AIRTABLE_FIELD_NAMES
   // for why).
-  const airtableFields: Record<string, string> = {};
+  const airtableFields: Record<string, string | string[]> = {};
   for (const { key, value } of getSummaryFields(form)) {
     if (!value) continue;
     const columnName = AIRTABLE_FIELD_NAMES[key];
     if (!columnName) continue;
-    airtableFields[columnName] = value;
+    airtableFields[columnName] = AIRTABLE_MULTISELECT_FIELDS.includes(key)
+      ? value.split(", ").filter(Boolean)
+      : value;
   }
 
   const createRes = await fetch(

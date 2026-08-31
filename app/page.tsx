@@ -49,6 +49,7 @@ import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import {
   FILE_LABELS,
+  LICENSED_STATES,
   MEDICARE_OPTIONS,
   US_STATES,
   emptyForm,
@@ -281,7 +282,7 @@ function MultiCombobox({
   return (
     <div
       className={cn(
-        "min-h-10 w-full rounded-lg border bg-transparent px-2 py-1.5 flex flex-wrap items-center gap-1.5",
+        "min-h-8 w-full rounded-lg border bg-transparent px-2 py-1 flex flex-wrap items-center gap-1.5",
         invalid ? "border-destructive" : "border-input",
       )}
     >
@@ -306,10 +307,10 @@ function MultiCombobox({
           render={
             <button
               type="button"
-              className="inline-flex items-center justify-center w-7 h-7 rounded-md border border-dashed border-[#D9C7EE] text-[#5B5FE0] hover:bg-[#F0E5FA] shrink-0"
+              className="inline-flex items-center justify-center w-6 h-6 rounded-md border border-dashed border-[#D9C7EE] text-[#5B5FE0] hover:bg-[#F0E5FA] shrink-0"
               aria-label="Add state"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-3 h-3" />
             </button>
           }
         />
@@ -476,8 +477,8 @@ export default function  PitchHealthOnboarding() {
           Pitch health.
         </h1>
         <p className="text-sm text-[#6E677E] max-w-sm mx-auto leading-relaxed">
-          A few details so payroll, IT, and compliance can get your line set up.
-          About ten minutes, start to finish.
+          {/* A few details so payroll, IT, and compliance can get your line set up.
+          About ten minutes, start to finish. */}
         </p>
       </div>
 
@@ -646,7 +647,7 @@ export default function  PitchHealthOnboarding() {
                     onChange={(states) =>
                       update("licensedStates", states.join(", "))
                     }
-                    options={US_STATES}
+                    options={LICENSED_STATES}
                     searchPlaceholder="Search state..."
                     invalid={fieldInvalid("licensedStates")}
                   />
