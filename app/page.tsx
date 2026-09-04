@@ -344,6 +344,50 @@ function MultiCombobox({
   );
 }
 
+// Phone-camera photos for the ID/void-cheque/speed-test uploads can be large
+// enough to push the request past Vercel's function payload limit (413
+// FUNCTION_PAYLOAD_TOO_LARGE). Downscale to at most 1800px on the long edge
+// and re-encode as JPEG, stepping quality down until the file is reasonably
+// small. Non-image files (e.g. a PDF) pass through untouched.
+async function compressImageFile(
+  file: File,
+  { maxDimension = 1800, maxBytes = 1.5 * 1024 * 1024 } = {},
+): Promise<File> {
+  if (!file.type.startsWith("image/")) return file;
+
+  const bitmap = await createImageBitmap(file).catch(() => null);
+  if (!bitmap) return file;
+
+  const scale = Math.min(
+    1,
+    maxDimension / Math.max(bitmap.width, bitmap.height),
+  );
+  const width = Math.round(bitmap.width * scale);
+  const height = Math.round(bitmap.height * scale);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return file;
+  ctx.drawImage(bitmap, 0, 0, width, height);
+
+  let quality = 0.9;
+  let blob: Blob | null = null;
+  for (let attempt = 0; attempt < 6; attempt++) {
+    blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", quality),
+    );
+    if (!blob || blob.size <= maxBytes || quality <= 0.5) break;
+    quality -= 0.1;
+  }
+
+  if (!blob) return file;
+
+  const newName = file.name.replace(/\.[^.]+$/, "") + ".jpg";
+  return new File([blob], newName, { type: "image/jpeg" });
+}
+
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <h2 className="flex items-center gap-2.5 text-lg font-extrabold text-[#201C29] mb-6">
@@ -366,12 +410,27 @@ export default function  PitchHealthOnboarding() {
     "idle" | "submitting" | "success" | "error"
   >("idle");
   const [submitError, setSubmitError] = useState("");
+  // Resume state for retries: once a submission partially succeeds, remember
+  // the Airtable recordId and which files already uploaded so a retry only
+  // sends what's missing instead of re-submitting everything from scratch.
+  const [recordId, setRecordId] = useState<string | null>(null);
+  const [uploadedKeys, setUploadedKeys] = useState<string[]>([]);
 
   const update = (key: keyof FormState, value: string | null) =>
     setForm((f) => ({ ...f, [key]: value ?? "" }));
 
-  const setFile = (name: string, file: File | null) =>
+  const setFile = (name: string, file: File | null) => {
+    if (!file) {
+      setFiles((f) => ({ ...f, [name]: null }));
+      return;
+    }
+    // Show the original immediately, then swap in the compressed version once
+    // it's ready (compression is async and shouldn't block the UI).
     setFiles((f) => ({ ...f, [name]: file }));
+    compressImageFile(file).then((compressed) => {
+      setFiles((f) => (f[name] === file ? { ...f, [name]: compressed } : f));
+    });
+  };
 
   const isStepValid = (stepIndex: number) => {
     const { fields, files: requiredFiles } = getStepRequirements(stepIndex);
@@ -418,17 +477,49 @@ export default function  PitchHealthOnboarding() {
       for (const [key, value] of Object.entries(form)) {
         payload.set(key, value);
       }
+      // Resume state from a previous failed attempt: skip files that already
+      // uploaded and let the server reuse the existing Airtable record
+      // instead of creating a duplicate.
       for (const [key, file] of Object.entries(files)) {
-        if (file) payload.set(key, file);
+        if (file && !uploadedKeys.includes(key)) payload.set(key, file);
       }
+      if (recordId) payload.set("recordId", recordId);
+      if (uploadedKeys.length) {
+        payload.set("uploadedKeys", JSON.stringify(uploadedKeys));
+      }
+
       const res = await fetch("/api/onboarding", {
         method: "POST",
         body: payload,
       });
-      const data = await res.json();
+
+      if (res.status === 413) {
+        throw new Error(
+          "One of your files is too large to upload. Please try a smaller photo or screenshot and submit again.",
+        );
+      }
+
+      let data: {
+        ok?: boolean;
+        error?: string;
+        recordId?: string;
+        uploadedKeys?: string[];
+      };
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error("Failed to submit onboarding. Please try again.");
+      }
+
+      // Remember how far the request got so a retry resumes instead of
+      // restarting, whether this attempt succeeded or failed partway.
+      if (data.recordId) setRecordId(data.recordId);
+      if (data.uploadedKeys) setUploadedKeys(data.uploadedKeys);
+
       if (!res.ok || !data.ok) {
         throw new Error(data?.error || "Failed to submit onboarding.");
       }
+
       setSubmitStatus("success");
       window.setTimeout(() => {
         window.location.reload();
