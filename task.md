@@ -1,5 +1,1 @@
-Does your Government-issued ID have your Full Address?
-
-if this is yes dont shor the document with address
-
-else if no shhow the document with address
+[ "Full Name", "Personal email", "Phone Number", "Date of Birth", "Full Mailing Address", "Resident State", "States you're licensed in:", "NPN", "SSN", "Bank Details", "Upload your a screenshot of your internet speed. Go to speedtest.net", "Screenshot of your Social Security Card", "Photo ID", "Email", "Added to Company Directory?", "Submitted At", "First Step", "Discord SMS", "First Name", "Are you new to Medicare?", "AHIP-AML Certificates" ]

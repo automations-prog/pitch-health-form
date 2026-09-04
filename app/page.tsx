@@ -474,7 +474,7 @@ export default function  PitchHealthOnboarding() {
         <h1 className="text-3xl font-extrabold text-[#201C29] leading-tight mb-3">
           Welcome to
           <br />
-          Pitch health.
+          Pitch Health Solutions.
         </h1>
         <p className="text-sm text-[#6E677E] max-w-sm mx-auto leading-relaxed">
           {/* A few details so payroll, IT, and compliance can get your line set up.
