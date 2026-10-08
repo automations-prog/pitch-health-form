@@ -95,35 +95,9 @@ const US_STATE_LIST = [
 
 export const US_STATES = US_STATE_LIST.map((s) => `${s.name} - ${s.code}`);
 
-// The subset of states agents can actually be licensed in, for the "States
-// you're licensed in" multi-select. Smaller than US_STATES (used for
-// Resident state), which stays the full list.
-const LICENSED_STATE_LIST = [
-  { name: "Alabama", code: "AL" },
-  { name: "Arizona", code: "AZ" },
-  { name: "Florida", code: "FL" },
-  { name: "Illinois", code: "IL" },
-  { name: "Louisiana", code: "LA" },
-  { name: "Michigan", code: "MI" },
-  { name: "Mississippi", code: "MS" },
-  { name: "North Carolina", code: "NC" },
-  { name: "Ohio", code: "OH" },
-  { name: "Oklahoma", code: "OK" },
-  { name: "Pennsylvania", code: "PA" },
-  { name: "South Carolina", code: "SC" },
-  { name: "Tennessee", code: "TN" },
-  { name: "Texas", code: "TX" },
-  { name: "Virginia", code: "VA" },
-  { name: "Iowa", code: "IA" },
-  { name: "Georgia", code: "GA" },
-  { name: "Missouri", code: "MO" },
-  { name: "Indiana", code: "IN" },
-  { name: "New Mexico", code: "NM" },
-];
-
-export const LICENSED_STATES = LICENSED_STATE_LIST.map(
-  (s) => `${s.name} - ${s.code}`,
-);
+// Options for the "States you're licensed in" multi-select — all 50 states,
+// same list as Resident state.
+export const LICENSED_STATES = US_STATES;
 
 // Keys match the Dropzone `name` used on the client, and the FormData keys
 // the client posts to the API route. Values are the friendly labels shown in
